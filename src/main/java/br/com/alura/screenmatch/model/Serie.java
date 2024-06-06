@@ -1,25 +1,51 @@
 package br.com.alura.screenmatch.model;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
+import jakarta.persistence.*;
 
-import java.util.Optional;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.OptionalDouble;
 
+@Entity
+@Table(name = "series")
 public class Serie {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(unique = true)
     private String titulo;
     private Integer totalTemporadas;
-    private Double avalicao;
+    private Double avaliacao;
+
+    @Enumerated(EnumType.STRING)
     private Categoria genero;
     private String atores;
     private String poster;
     private String sinopse;
 
+    public Serie() {
+    }
+
+    @OneToMany(mappedBy = "serie",cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private List<Episodio> episodios = new ArrayList<>();
+
+    public List<Episodio> getEpisodios() {
+        return episodios;
+    }
+
+    public void setEpisodios(List<Episodio> episodios) {
+        episodios.forEach(e -> e.setSerie(this));
+        this.episodios = episodios;
+    }
+
     public Serie(DadosSerie dadosSerie) {
         this.titulo = dadosSerie.titulo();
         this.totalTemporadas = dadosSerie.totalTemporadas();
-        this.avalicao = OptionalDouble.of(Double.valueOf(dadosSerie.avalicao())).orElse(0);
+        this.avaliacao = OptionalDouble.of(Double.valueOf(dadosSerie.avalicao())).orElse(0);
         this.genero = Categoria.fromString(dadosSerie.genero().split(",")[0].trim());
+        this.atores = dadosSerie.atores();
         this.poster = dadosSerie.poster();
         this.sinopse = dadosSerie.sinopse();
     }
@@ -40,12 +66,12 @@ public class Serie {
         this.totalTemporadas = totalTemporadas;
     }
 
-    public Double getAvalicao() {
-        return avalicao;
+    public Double getAvaliacao() {
+        return avaliacao;
     }
 
-    public void setAvalicao(Double avalicao) {
-        this.avalicao = avalicao;
+    public void setAvaliacao(Double avaliacao) {
+        this.avaliacao = avaliacao;
     }
 
     public Categoria getGenero() {
@@ -80,8 +106,16 @@ public class Serie {
         this.sinopse = sinopse;
     }
 
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     @Override
     public String toString() {
-        return "Titulo='" + titulo  + ", totalTemporadas=" + totalTemporadas + ", avalicao=" + avalicao + ", genero=" + genero + ", atores='" + atores + ", poster='" + poster + ", sinopse='" + sinopse;
+        return "Titulo='" + titulo  + ", totalTemporadas=" + totalTemporadas + ", avalicao=" + avaliacao + ", genero=" + genero + ", atores='" + atores + ", poster='" + poster + ", sinopse='" + sinopse + ", episodios='" + episodios;
     }
 }
